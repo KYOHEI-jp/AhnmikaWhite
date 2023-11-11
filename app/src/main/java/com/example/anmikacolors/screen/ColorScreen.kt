@@ -49,12 +49,11 @@ fun ColorScreen() {
             attempts++
             if (color == selectedColor) {
                 toastMessage = "正解！"
-                resetQuiz()
+                showAnswer = true
             } else {
                 if (attempts >= 5) {
                     showAnswer = true
                     toastMessage = "失敗！"
-                    resetQuiz()
                 } else {
                     toastMessage = "不正解..."
                 }
@@ -71,8 +70,42 @@ fun ColorScreen() {
         }
     }
 
-    // UIのレイアウト
     Column(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .background(selectedColor)
+                .border(1.dp, Color.Gray)
+                .padding(8.dp)
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text("$attempts/5")
+        }
+
+        // グリッドセルの数を動的に決定
+        val gridCellsCount = when {
+            shadesOfWhite.size <= 10 -> 2
+            shadesOfWhite.size <= 20 -> 3
+            else -> 4
+        }
+
+        LazyVerticalGrid(
+            GridCells.Fixed(gridCellsCount),
+            contentPadding = PaddingValues(8.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            items(shadesOfWhite) { color ->
+                WhiteBox(color = color, onClick = { selectColor(color) }, showAnswer = showAnswer && color == selectedColor)
+            }
+        }
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -92,33 +125,22 @@ fun ColorScreen() {
                 Text("リセット")
             }
         }
+    }
+}
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .background(selectedColor)
-                .border(1.dp, Color.Gray)
-                .padding(8.dp)
-        )
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text("$attempts/5")
-        }
-
-        LazyVerticalGrid(
-            GridCells.Fixed(3),
-            contentPadding = PaddingValues(8.dp),
-            modifier = Modifier.weight(1f)
-        ) {
-            items(shadesOfWhite) { color ->
-                WhiteBox(color = color, onClick = { selectColor(color) }, showAnswer = showAnswer && color == selectedColor)
-            }
+@Composable
+fun WhiteBox(color: Color, onClick: () -> Unit, showAnswer: Boolean) {
+    Box(
+        modifier = Modifier
+            .size(100.dp)
+            .padding(4.dp)
+            .border(1.dp, Color.Gray)
+            .background(color)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        if (showAnswer) {
+            Text("正解はこれでした。", color = Color.Black)
         }
     }
 }
