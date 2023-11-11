@@ -33,24 +33,32 @@ fun ColorScreen() {
     var attempts by remember { mutableStateOf(0) }
     var toastMessage by remember { mutableStateOf("") }
     var showAnswer by remember { mutableStateOf(false) }
+    var selectedGrids by remember { mutableStateOf(setOf<Color>()) }
+    var failedGrids by remember { mutableStateOf(setOf<Color>()) }
 
     // クイズをリセットする関数
     fun resetQuiz() {
         showStartButton = true
         attempts = 0
         showAnswer = false
+        selectedGrids = setOf()
+        failedGrids = setOf()
         shadesOfWhite = originalShadesOfWhite.shuffled()
         selectedColor = shadesOfWhite.random()
     }
 
     // 色を選択する関数
     fun selectColor(color: Color) {
+        if (color in selectedGrids) return // すでに選択されたグリッドは無効
+
+        selectedGrids = selectedGrids + color // グリッドを選択済みに追加
         if (attempts < 5) {
             attempts++
             if (color == selectedColor) {
                 toastMessage = "正解！"
                 showAnswer = true
             } else {
+                failedGrids = failedGrids + color // 失敗したグリッドを追加
                 if (attempts >= 5) {
                     showAnswer = true
                     toastMessage = "失敗！"
@@ -71,6 +79,8 @@ fun ColorScreen() {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
+
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -89,7 +99,6 @@ fun ColorScreen() {
             Text("$attempts/5")
         }
 
-        // グリッドセルの数を動的に決定
         val gridCellsCount = when {
             shadesOfWhite.size <= 10 -> 2
             shadesOfWhite.size <= 20 -> 3
@@ -102,7 +111,13 @@ fun ColorScreen() {
             modifier = Modifier.weight(1f)
         ) {
             items(shadesOfWhite) { color ->
-                WhiteBox(color = color, onClick = { selectColor(color) }, showAnswer = showAnswer && color == selectedColor)
+                WhiteBox(
+                    color = color,
+                    onClick = { selectColor(color) },
+                    showAnswer = showAnswer && color == selectedColor,
+                    disabled = color in selectedGrids,
+                    failed = color in failedGrids
+                )
             }
         }
 
@@ -124,23 +139,6 @@ fun ColorScreen() {
             Button(onClick = { resetQuiz() }) {
                 Text("リセット")
             }
-        }
-    }
-}
-
-@Composable
-fun WhiteBox(color: Color, onClick: () -> Unit, showAnswer: Boolean) {
-    Box(
-        modifier = Modifier
-            .size(100.dp)
-            .padding(4.dp)
-            .border(1.dp, Color.Gray)
-            .background(color)
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        if (showAnswer) {
-            Text("正解はこれでした。", color = Color.Black)
         }
     }
 }

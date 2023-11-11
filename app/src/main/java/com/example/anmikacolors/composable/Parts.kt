@@ -14,14 +14,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun WhiteBox(color: Color, onClick: () -> Unit, showAnswer: Boolean) {
+fun WhiteBox(color: Color, onClick: () -> Unit, showAnswer: Boolean, disabled: Boolean, failed: Boolean) {
+    val boxColor = if (failed) Color.Red else color // 失敗したグリッドは赤く表示
+
     Box(
         modifier = Modifier
             .size(100.dp)
             .padding(4.dp)
             .border(1.dp, Color.Gray)
-            .background(color)
-            .clickable(onClick = onClick),
+            .background(boxColor)
+            .clickable(enabled = !disabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         if (showAnswer) {
