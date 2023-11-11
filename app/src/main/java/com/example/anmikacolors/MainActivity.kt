@@ -11,12 +11,14 @@ import com.example.anmikacolors.screen.ColorScreen
 import com.example.anmikacolors.ui.theme.AnmikaColorsTheme
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MobileAds.initialize(this) {}
         setContent {
             AnmikaColorsTheme {
                 // A surface container using the 'background' color from the theme
@@ -24,6 +26,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    loadAd()
                     ColorScreen()
                 }
             }
@@ -37,7 +40,7 @@ class MainActivity : ComponentActivity() {
 
         InterstitialAd.load(
             this,
-            "YOUR_ADMOB_AD_UNIT_ID",
+            "ca-app-pub-2236113996002924/2666184064",
             adRequest,
             object : InterstitialAdLoadCallback() {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
