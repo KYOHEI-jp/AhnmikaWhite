@@ -20,21 +20,28 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun ColorScreen() {
-    // 30種類の白色を生成
-    val shadesOfWhite = List(30) { i ->
+    // 30種類の異なる濃度の白色を生成
+    val originalShadesOfWhite = List(30) { i ->
         val shade = 1f - (i / 29f * 0.3f) // 最大30%までの濃度変化
         Color(shade, shade, shade)
     }
 
+    // 色のリストを状態として保持
+    var shadesOfWhite by remember { mutableStateOf(originalShadesOfWhite) }
+
+    // 色をシャッフルする関数
+    fun shuffleColors() {
+        shadesOfWhite = shadesOfWhite.shuffled()
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         LazyVerticalGrid(
-            // ここでcellsパラメータを直接使用
             GridCells.Fixed(3),
             contentPadding = PaddingValues(8.dp),
             modifier = Modifier.weight(1f)
         ) {
-            items(shadesOfWhite.size) { index ->
-                ColorBox(color = shadesOfWhite[index])
+            items(shadesOfWhite) { color ->
+                WhiteBox(color = color)
             }
         }
 
@@ -45,13 +52,30 @@ fun ColorScreen() {
                 .padding(8.dp),
             horizontalArrangement = Arrangement.Center
         ) {
-            Button(onClick = { /*TODO*/ }) {
-                Text(text = "スタート")
-            }
+            StartButton(onClick = { shuffleColors() })
         }
     }
 }
 
+
+
+@Composable
+fun WhiteBox(color: Color) {
+    Box(
+        modifier = Modifier
+            .size(100.dp)
+            .padding(4.dp)
+            .border(1.dp, Color.Gray) // 罫線を追加
+            .background(color)
+    )
+}
+
+@Composable
+fun StartButton(onClick: () -> Unit) {
+    Button(onClick = onClick) {
+        Text("スタート")
+    }
+}
 
 @Composable
 fun ColorBox(color: Color) {
