@@ -21,20 +21,31 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ColorScreen() {
     // 30種類の異なる濃度の白色を生成
-    val originalShadesOfWhite = List(30) { i ->
-        val shade = 1f - (i / 29f * 0.3f) // 最大30%までの濃度変化
+    val shadesOfWhite = List(30) { i ->
+        val shade = 1f - (i / 29f * 0.3f)
         Color(shade, shade, shade)
     }
 
-    // 色のリストを状態として保持
-    var shadesOfWhite by remember { mutableStateOf(originalShadesOfWhite) }
+    // 選ばれた色を状態として保持
+    var selectedColor by remember { mutableStateOf(shadesOfWhite[0]) }
 
     // 色をシャッフルする関数
     fun shuffleColors() {
-        shadesOfWhite = shadesOfWhite.shuffled()
+        val shuffledColors = shadesOfWhite.shuffled()
+        selectedColor = shuffledColors[0] // シャッフル後の最初の色を選択
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        // 選ばれた色を表示するBox
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .background(selectedColor)
+                .padding(8.dp)
+                .border(1.dp, Color.Gray) // 罫線を追加
+        )
+
         LazyVerticalGrid(
             GridCells.Fixed(3),
             contentPadding = PaddingValues(8.dp),
