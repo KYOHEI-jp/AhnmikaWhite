@@ -1,4 +1,5 @@
 package com.example.anmikacolors.screen
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,10 +14,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
+import com.example.anmikacolors.composable.WhiteBox
+import kotlinx.coroutines.delay
 
 @Composable
 fun ColorScreen() {
-    // 30種類の異なる濃度の白色を生成
+    val context = LocalContext.current
     val originalShadesOfWhite = List(30) { i ->
         val shade = 1f - (i / 29f * 0.3f)
         Color(shade, shade, shade)
@@ -26,14 +31,15 @@ fun ColorScreen() {
     var selectedColor by remember { mutableStateOf(Color.White) }
     var showStartButton by remember { mutableStateOf(true) }
     var attempts by remember { mutableStateOf(0) }
-    var showAlert by remember { mutableStateOf(false) }
-    var alertMessage by remember { mutableStateOf("") }
+    var toastMessage by remember { mutableStateOf("") }
+    var showAnswer by remember { mutableStateOf(false) }
 
     // クイズをリセットする関数
     fun resetQuiz() {
         showStartButton = true
         attempts = 0
-        shadesOfWhite = originalShadesOfWhite.shuffled() // グリッドの色をシャッフル
+        showAnswer = false
+        shadesOfWhite = originalShadesOfWhite.shuffled()
         selectedColor = shadesOfWhite.random()
     }
 
@@ -42,44 +48,48 @@ fun ColorScreen() {
         if (attempts < 5) {
             attempts++
             if (color == selectedColor) {
-                alertMessage = "正解！"
-            } else {
-                alertMessage = if (attempts >= 5) "失敗！" else "不正解..."
-            }
-            showAlert = true
-            if (attempts >= 5) {
+                toastMessage = "正解！"
                 resetQuiz()
+            } else {
+                if (attempts >= 5) {
+                    showAnswer = true
+                    toastMessage = "失敗！"
+                    resetQuiz()
+                } else {
+                    toastMessage = "不正解..."
+                }
             }
         }
     }
 
-    if (showAlert) {
-        AlertDialog(
-            onDismissRequest = { showAlert = false },
-            title = { Text("結果") },
-            text = { Text(alertMessage) },
-            confirmButton = {
-                Button(onClick = { showAlert = false }) {
-                    Text("OK")
-                }
-            }
-        )
+    // Toastを表示
+    LaunchedEffect(toastMessage) {
+        if (toastMessage.isNotEmpty()) {
+            Toast.makeText(context, toastMessage, Toast.LENGTH_SHORT).show()
+            delay(2000) // Toast表示時間
+            toastMessage = "" // Toastメッセージをリセット
+        }
     }
 
+    // UIのレイアウト
     Column(modifier = Modifier.fillMaxSize()) {
-        if (showStartButton) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            if (showStartButton) {
                 Button(onClick = {
                     showStartButton = false
                     resetQuiz()
                 }) {
                     Text("スタート")
                 }
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = { resetQuiz() }) {
+                Text("リセット")
             }
         }
 
@@ -92,7 +102,6 @@ fun ColorScreen() {
                 .padding(8.dp)
         )
 
-        // 現在の試行回数と最大試行回数を表示
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -108,20 +117,8 @@ fun ColorScreen() {
             modifier = Modifier.weight(1f)
         ) {
             items(shadesOfWhite) { color ->
-                WhiteBox(color = color, onClick = { selectColor(color) })
+                WhiteBox(color = color, onClick = { selectColor(color) }, showAnswer = showAnswer && color == selectedColor)
             }
         }
     }
-}
-
-@Composable
-fun WhiteBox(color: Color, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .size(100.dp)
-            .padding(4.dp)
-            .border(1.dp, Color.Gray)
-            .background(color)
-            .clickable(onClick = onClick)
-    )
 }
